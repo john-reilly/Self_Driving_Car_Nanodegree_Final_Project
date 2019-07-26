@@ -15,7 +15,9 @@ class ColorClassifier:
         cwd = os.path.dirname(os.path.realpath(__file__))
         #john added is_site part below
         if is_site:
-            self.class_model = load_model(cwd + '/models/model_site.h5')
+            self.class_model = load_model(cwd + '/models/model.h5')
+            #self.class_model = load_model(cwd + '/models/model_site.h5')
+            
         else:
               self.class_model = load_model(cwd + '/models/model.h5')
               #self.class_model = load_model(cwd + '/models/model_sim.h5')
