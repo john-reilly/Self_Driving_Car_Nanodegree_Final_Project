@@ -32,9 +32,11 @@ class TLDetector(object):
         self.light_classifier = None # Init here because TLClassifier constructor takes a long time
 
         # set to True, if you want to use the simulator traffic light color (only for testing)
-        self.USE_SIMULATOR_TRAFFIC_LIGHT_COLOR = False # True # False # set to true 28 July as part of new dataset creation
-        self.RECORD_CAMERA_IMAGES = False # True  # set to True to record output from camera works idependently from above Boolean
-        
+        self.USE_SIMULATOR_TRAFFIC_LIGHT_COLOR = False
+
+        # set to True to record output from camera works idependently from above Boolean
+        self.RECORD_CAMERA_IMAGES = False
+
         # from waypoint_updater to make similar KDtree
         self.waypoints_2d = None
         self.waypoint_tree = None
