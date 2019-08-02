@@ -6,22 +6,16 @@ import os
 import rospy
 import tensorflow as tf
 
-#from traffic_light_colors import TrafficLight#enum in traffi clight colours was a problem in the test
 from styx_msgs.msg import TrafficLight # for traffic light colour values
 
 class ColorClassifier:
     def __init__(self, is_site):
         self.IMAGE_SIZE = 32
         cwd = os.path.dirname(os.path.realpath(__file__))
-        #john added is_site part below
         if is_site:
-            #self.class_model = load_model(cwd + '/models/model.h5')
-            self.class_model = load_model(cwd + '/models/model_SITE.h5')
-            
+            self.class_model = load_model(cwd + '/models/model_site.h5')
         else:
-              #self.class_model = load_model(cwd + '/models/model.h5')
-              #self.class_model = load_model(cwd + '/models/model_SIM.h5')
-            self.class_model = load_model(cwd + '/models/joosts_SIM_model.h5')
+            self.class_model = load_model(cwd + '/models/model_sim.h5')
             
         self.class_graph = tf.get_default_graph()
 
@@ -34,16 +28,14 @@ class ColorClassifier:
             prob = self.class_model.predict_proba(x)
 
         return preds[0], prob[0]
-        #return TrafficLight.RED, prob[0]# i am making it alway return RED as a test
 
     def predict_images(self, images):
         predictions = []
         for image in images:
             pred, prob = self.predict_image(image)
-            #rospy.loginfo('Color pred {} with prob'.format(pred, prob))
             rospy.loginfo('Color pred {} with prob {}'.format(pred, prob)) #john added {} here missing?
             predictions.append(pred)
-            # added by John to force a return on detection of even one red
+            # force a return on detection of even one red
             if (pred == 0): return TrafficLight.RED
             
         if len(predictions) > 0:
