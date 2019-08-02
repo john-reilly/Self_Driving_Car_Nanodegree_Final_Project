@@ -32,8 +32,9 @@ class TLDetector(object):
         self.light_classifier = None # Init here because TLClassifier constructor takes a long time
 
         # set to True, if you want to use the simulator traffic light color (only for testing)
-        self.USE_SIMULATOR_TRAFFIC_LIGHT_COLOR = False
-
+        self.USE_SIMULATOR_TRAFFIC_LIGHT_COLOR = False # True # False # set to true 28 July as part of new dataset creation
+        self.RECORD_CAMERA_IMAGES = False # True  # set to True to record output from camera works idependently from above Boolean
+        
         #from waypoint_updater to make similar KDtree
         self.waypoints_2d = None
         self.waypoint_tree = None
@@ -78,20 +79,21 @@ class TLDetector(object):
         #another expeirment moved from below to allow camera to be turned off
         # this works the cars slows and stops fine at the traffic lights without processing the images in the image callback
         # this is ON for testing OFF for final version
-        '''
-        light_wp, state = self.process_traffic_lights()
-        if self.state != state:
-            self.state_count = 0
-            self.state = state
-        elif self.state_count >= STATE_COUNT_THRESHOLD:
-            self.last_state = self.state
-            light_wp = light_wp if state == TrafficLight.RED else -1
-            self.last_wp = light_wp
-            self.upcoming_red_light_pub.publish(Int32(light_wp))
-        else:
-            self.upcoming_red_light_pub.publish(Int32(self.last_wp))
-        self.state_count += 1
-        '''
+        if self.USE_SIMULATOR_TRAFFIC_LIGHT_COLOR == True :
+            #this is the same coe from image_cb but here for when we want to follow waypoints and stop at lights without camera son and using simulator provided traffic light states
+            light_wp, state = self.process_traffic_lights()
+            if self.state != state:
+                self.state_count = 0
+                self.state = state
+            elif self.state_count >= STATE_COUNT_THRESHOLD:
+                self.last_state = self.state
+                light_wp = light_wp if state == TrafficLight.RED else -1
+                self.last_wp = light_wp
+                self.upcoming_red_light_pub.publish(Int32(light_wp))
+            else:
+                self.upcoming_red_light_pub.publish(Int32(self.last_wp))
+            self.state_count += 1
+        
 
 
     def waypoints_cb(self, waypoints):
@@ -140,21 +142,29 @@ class TLDetector(object):
         of times till we start using it. Otherwise the previous stable state is
         used.
         '''
-        if self.state != state:
-            self.state_count = 0
-            self.state = state
-        elif self.state_count >= STATE_COUNT_THRESHOLD:
-            self.last_state = self.state
-            light_wp = light_wp if state == TrafficLight.RED else -1
-            self.last_wp = light_wp
-            self.upcoming_red_light_pub.publish(Int32(light_wp))
+         #added 31 august if statement because when USE_SIMULATOR_TRAFFIC_ True waypoint are updated in pose
+        if self.USE_SIMULATOR_TRAFFIC_LIGHT_COLOR == False :
             
-            
-            rospy.loginfo('In tl_detector elif section light_wp:{}'.format(Int32(self.last_wp) ) )
-        else:
-            self.upcoming_red_light_pub.publish(Int32(self.last_wp))
-            rospy.loginfo('In tl_detector else section last_wp:{}'.format( Int32(self.last_wp) ) )
-        self.state_count += 1
+            if self.state != state:
+                self.state_count = 0
+                self.state = state
+            elif self.state_count >= STATE_COUNT_THRESHOLD:
+                self.last_state = self.state
+                light_wp = light_wp if state == TrafficLight.RED else -1
+                self.last_wp = light_wp
+                self.upcoming_red_light_pub.publish(Int32(light_wp))           
+
+                rospy.loginfo('In tl_detector elif section light_wp:{}'.format(Int32(self.last_wp) ) )
+            else:
+                self.upcoming_red_light_pub.publish(Int32(self.last_wp))
+                rospy.loginfo('In tl_detector else section last_wp:{}'.format( Int32(self.last_wp) ) )
+            self.state_count += 1
+        
+        #maybe put call to generate test output here? 31 Aug
+        if self.RECORD_CAMERA_IMAGES == True : #this was in process image moved 31 aug
+            self.create_training_data(state) # 
+        
+        
 
     def get_closest_waypoint(self, x,y):# original was ... pose):
         """Identifies the closest path waypoint to the given position
@@ -219,14 +229,33 @@ class TLDetector(object):
 #this works and will be used if we want full screen images from the simulator
     def create_training_data(self, state):
         f_name = "sim_tl_{}_{}.jpg".format(calendar.timegm(time.gmtime()), state) # self.light_label(state))
-        dir = './data/train/sim'
-
-        if not os.path.exists(dir):
-            os.makedirs(dir)
+        #dir = './data/train/sim' #added to 28 July to put data into color folders
+        dir_RED = './data/RED'
+        dir_GREEN = './data/GREEN'
+        dir_YELLOW = './data/YELLOW'
+        dir_UNKNOWN = './data/UNKNOWN'
+        # making 4 dirs at same time if one is not there make them all
+        #new 28 July
+        if not os.path.exists(dir_RED):
+            os.makedirs(dir_RED)
+            os.makedirs(dir_GREEN)
+            os.makedirs(dir_YELLOW)
+            os.makedirs(dir_UNKNOWN)
 
         cv_image = self.bridge.imgmsg_to_cv2(self.camera_image)
         cv_image = cv_image[:, :, ::-1]
-        cv2.imwrite('{}/{}'.format(dir, f_name), cv_image)
+        #cv2.imwrite('{}/{}'.format(dir, f_name), cv_image)
+        #added 28 july to spearate images into folders for dataset
+        if state == 0 : #RED
+            cv2.imwrite('{}/{}'.format(dir_RED, f_name), cv_image)
+        elif state == 2 : #GREEN
+            cv2.imwrite('{}/{}'.format(dir_GREEN, f_name), cv_image)
+        elif state == 1 : # YELLOW
+            cv2.imwrite('{}/{}'.format(dir_YELLOW, f_name), cv_image)
+        elif state == 4 : #UNKNOWN
+            cv2.imwrite('{}/{}'.format(dir_UNKNOWN, f_name), cv_image)#had unkMon here bug!
+            
+            
 
 
     def process_traffic_lights(self):
@@ -271,7 +300,10 @@ class TLDetector(object):
                 state = self.get_light_state(closest_light) # from image
              #experiment to create test images from https://github.com/swap1712/carnd-capstone/blob/master/ros/src/tl_detector/tl_detector.py
             #this exerpiemnt to create traiing data works and might be used if we need it
-            #self.create_training_data(state) # this works!
+            # in the end 5000+ images made for training by calling this function
+            #moving below to image_cb
+            #if self.RECORD_CAMERA_IMAGES == True : # self.has_image : throws error self.has_image may not be created yet
+            #    self.create_training_data(state) # this works! # back on 28 July for more dataset
 
             return line_wp_idx, state
         return -1, TrafficLight.UNKNOWN

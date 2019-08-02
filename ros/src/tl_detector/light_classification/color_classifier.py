@@ -15,12 +15,13 @@ class ColorClassifier:
         cwd = os.path.dirname(os.path.realpath(__file__))
         #john added is_site part below
         if is_site:
-            self.class_model = load_model(cwd + '/models/model.h5')
-            #self.class_model = load_model(cwd + '/models/model_site.h5')
+            #self.class_model = load_model(cwd + '/models/model.h5')
+            self.class_model = load_model(cwd + '/models/model_SITE.h5')
             
         else:
-              self.class_model = load_model(cwd + '/models/model.h5')
-              #self.class_model = load_model(cwd + '/models/model_sim.h5')
+              #self.class_model = load_model(cwd + '/models/model.h5')
+              #self.class_model = load_model(cwd + '/models/model_SIM.h5')
+            self.class_model = load_model(cwd + '/models/joosts_SIM_model.h5')
             
         self.class_graph = tf.get_default_graph()
 

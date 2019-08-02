@@ -142,6 +142,13 @@ class WaypointUpdater(object):
 
     def decelerate_waypoints(self, waypoints, closest_idx):
         rospy.loginfo('In decelerate waypoints stopline:{}'.format(self.stopline_wp_idx))
+        #john this is an attempt to save a before and after snapshot of waypoints to prove they are in fact getting modified
+        #f_name = "Before.txt" #hmmm no too sure about txt....
+        ##f = open(f_name,"w+")
+        #f.write(waypoints)
+        #f.close()
+        
+        
         temp = []
         for i, wp in enumerate(waypoints):
 
@@ -164,6 +171,8 @@ class WaypointUpdater(object):
                 vel = 0.0
 
             p.twist.twist.linear.x = min(vel, wp.twist.twist.linear.x)
+            #john below line showed X changing in logs so looks like its working
+            #rospy.loginfo('In decelerate waypoints p =:{}'.format(p))
             temp.append(p)
         #not sure if the part below is useful, need to verify
         # self.decelerate_count += 1
@@ -172,6 +181,13 @@ class WaypointUpdater(object):
             # vel_start = temp[0].twist.twist.linear.x
             # vel_end = temp[size].twist.twist.linear.x
             # rospy.logwarn("DECEL: vel[0]={:.2f}, vel[{}]={:.2f}".format(vel_start, size, vel_end))
+            
+            
+        #john this is an attempt to save a before and after snapshot of waypoints to prove they are in fact getting modified
+        #f_name = "After.txt" #hmmm no too sure about txt....
+        #f = open(f_name,"w+")
+        #f.write(temp)
+        #f.close()
         return temp       
 
     def pose_cb(self, msg):
