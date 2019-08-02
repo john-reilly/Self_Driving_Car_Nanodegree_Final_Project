@@ -13,15 +13,11 @@ class ColorClassifier:
     def __init__(self, is_site):
         self.IMAGE_SIZE = 32
         cwd = os.path.dirname(os.path.realpath(__file__))
-        #john added is_site part below
+        # use different model for simulator and parking lot
         if is_site:
             self.class_model = load_model(cwd + '/models/model.h5')
-            #self.class_model = load_model(cwd + '/models/model_site.h5')
-            
         else:
-              self.class_model = load_model(cwd + '/models/model.h5')
-              #self.class_model = load_model(cwd + '/models/model_sim.h5')
-            
+              self.class_model = load_model(cwd + '/models/model_sim.h5')
         self.class_graph = tf.get_default_graph()
 
     def predict_image(self, image):
@@ -45,8 +41,12 @@ class ColorClassifier:
             # added by John to force a return on detection of even one red
             if (pred == 0): return TrafficLight.RED
             
-        if len(predictions) > 0:
-            return max(predictions, key=predictions.count)
+            if len(predictions) > 0:
+                prediction = max(predictions, key=predictions.count)
+                if prediction == 3:
+                    return TrafficLight.UNKNOWN
+                else:
+                    return prediction
         else:
             return TrafficLight.UNKNOWN
 
