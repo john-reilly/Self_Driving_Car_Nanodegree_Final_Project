@@ -30,7 +30,6 @@ class PID(object):
         else:
             self.int_val = integral
         self.last_error = error
-        #rospy.logwarn("Throttle:{0}".format(val)) #from Q+A
-        #rospy.logwarn("Velocity error: {0}", format(error))
+       
 
         return val

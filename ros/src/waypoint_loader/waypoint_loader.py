@@ -55,20 +55,17 @@ class WaypointLoader(object):
 
                 waypoints.append(p)
         return self.decelerate(waypoints)
-        #return waypoints # I want to see is it stoping at 10 minutes becasue of decelerate or because end of a list?
-    #yes to above Question by not doing deceleration the car never stops and does infinite loop around track
-
+       
     def distance(self, p1, p2):
         x, y, z = p1.x - p2.x, p1.y - p2.y, p1.z - p2.z
         return math.sqrt(x*x + y*y + z*z)
 
     def decelerate(self, waypoints):
         last = waypoints[-1]
-        #last = waypoints[20]#this is a test value to see if I can pick a waypoint and stop at it didn't work...
+       
         last.twist.twist.linear.x = 0.
-        for wp in waypoints[:-1][::-1]:#original line
-        #for wp in waypoints[:20][::-1]:
-        #for wp in waypoints[:20][::20]:
+        for wp in waypoints[:-1][::-1]:
+       
             dist = self.distance(wp.pose.pose.position, last.pose.pose.position)
             vel = math.sqrt(2 * MAX_DECEL * dist)
             if vel < 1.:
