@@ -89,7 +89,6 @@ class ObjectClassifier:
                box_ratio > 1.5:
                 tf_boxes.append(boxes[i])
                 rospy.loginfo('Bouding box detected: {} {} {} {}'.format(xmin, xmax, ymin, ymax))
-                rospy.loginfo('Bouding box detected: {} {} {} {}'.format(xmin, xmax, ymin, ymax))
                 #
                 # extract cropped image from bounding box
                 #
