@@ -47,7 +47,11 @@ class ColorClassifier:
             if (pred == 0): return TrafficLight.RED
             
         if len(predictions) > 0:
-            return max(predictions, key=predictions.count)
+            prediction = max(predictions, key=predictions.count)
+            if prediction == 3:
+                return TrafficLight.UNKNOWN
+            else:
+                return prediction
         else:
             return TrafficLight.UNKNOWN
 
