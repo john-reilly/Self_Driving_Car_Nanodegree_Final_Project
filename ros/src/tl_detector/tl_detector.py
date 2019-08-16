@@ -143,12 +143,18 @@ class TLDetector(object):
                            
             if state == TrafficLight.GREEN:
                 self.state_count += 1
-
+                self.last_wp = light_wp
+                
                 if self.state_count >= STATE_COUNT_THRESHOLD :
                     light_wp = -1
-                    self.last_wp = light_wp
+                    #self.last_wp = light_wp
                     self.upcoming_red_light_pub.publish(Int32(light_wp))  
-                    rospy.loginfo('Threshold level of GREEN reached WP set to: {}'.format(Int32(self.last_wp) ) )
+                    rospy.loginfo('Threshold level of GREEN reached WP set to: {}'.format(Int32(light_wp) ) )
+                else :
+                    #for first second and thrid green detection so it is publishing something
+                    self.upcoming_red_light_pub.publish(Int32(self.last_wp))  
+                    rospy.loginfo(' GREEN below threshold: {}'.format(Int32(self.last_wp) ) )
+                    
             #### below removed 16 aug  
             '''
             elif self.state_count >= STATE_COUNT_THRESHOLD:
