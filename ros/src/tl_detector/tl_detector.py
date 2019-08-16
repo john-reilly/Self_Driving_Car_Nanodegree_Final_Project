@@ -129,11 +129,28 @@ class TLDetector(object):
         of times till we start using it. Otherwise the previous stable state is
         used.
         '''
+        
         if self.USE_SIMULATOR_TRAFFIC_LIGHT_COLOR == False :
-            
+            #change state resets counter 
             if self.state != state:
                 self.state_count = 0
                 self.state = state
+            
+            if state == TrafficLight.RED or state == TrafficLight.YELLOW or state == TrafficLight.UNKNOWN :
+                self.upcoming_red_light_pub.publish(Int32(light_wp))  
+                self.last_wp = light_wp
+                rospy.loginfo('RED YELLOW OR UNKNOW DETECED WP set to: {}'.format(Int32(self.last_wp) ) )
+                           
+            if state == TrafficLight.GREEN:
+                self.state_count += 1
+
+                if self.state_count >= STATE_COUNT_THRESHOLD :
+                    light_wp = -1
+                    self.last_wp = light_wp
+                    self.upcoming_red_light_pub.publish(Int32(light_wp))  
+                    rospy.loginfo('Threshold level of GREEN reached WP set to: {}'.format(Int32(self.last_wp) ) )
+            #### below removed 16 aug  
+            '''
             elif self.state_count >= STATE_COUNT_THRESHOLD:
                 self.last_state = self.state
                 light_wp = light_wp if state == TrafficLight.RED else -1
@@ -145,7 +162,8 @@ class TLDetector(object):
                 self.upcoming_red_light_pub.publish(Int32(self.last_wp))
                 rospy.loginfo('In tl_detector else section last_wp:{}'.format( Int32(self.last_wp) ) )
             self.state_count += 1
-        
+            '''
+        ########################### above modyfied 16 Aug
         if self.RECORD_CAMERA_IMAGES == True :
             self.create_training_data(state) # 
 
